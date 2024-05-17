@@ -1,2 +1,2 @@
-# Reg cashpower services
+# REG cashpower services
 REG cash power services provision system
