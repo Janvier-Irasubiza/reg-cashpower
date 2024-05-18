@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Client, Request, Upload, Dispense
+from .models import User, Request, Upload, Dispense
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -8,14 +8,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
         
-class ClientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Client
-        fields = "__all__"
+# class ClientSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Client
+#         fields = "__all__"
         
 
 class RequestSerializer(serializers.ModelSerializer): 
-    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
+    client = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     
     class Meta:
         model = Request

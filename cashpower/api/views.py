@@ -1,10 +1,9 @@
 from django.http import Http404
-from django.shortcuts import render
-from .models import User, Client, Request, Upload, Dispense
-from .serializers import UserSerializer, ClientSerializer, RequestSerializer, UploadSerializer, DispenseSerializer
+from .models import User, Request, Upload, Dispense
+from .serializers import UserSerializer, RequestSerializer, UploadSerializer, DispenseSerializer
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, logout
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -12,85 +11,70 @@ from rest_framework import status
 from django.core.exceptions import ObjectDoesNotExist
 
 
+@api_view(['GET'])
+def test_token(request):
+    try:
+        Token.objects.get(key=request.data.get('Token'))
+        return  Response("Passed!")
+    except Token.DoesNotExist:
+        return Response("Failed!")
+        
+
 # Admin login
 # -----------
 @api_view(['POST'])
-def admin_login(request):
+def login_view(request: Request):
     username = request.data.get('username')
     password = request.data.get('password')
     
     if not username or not password:
-        return Response({
-            'detail': 'Username and password are required.'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
     
     user = authenticate(username=username, password=password)
     
-    if user is not None:
+    if user:
         token, created = Token.objects.get_or_create(user=user)
-        serializer = UserSerializer(instance=user)
-        
+        serializer = UserSerializer(user)
         user_info = {
             "id": serializer.data['id'],
             "username": serializer.data['username'],
             "email": serializer.data['email'],
         }
-        
         return Response({
             "success": "Authenticated successfully",
-            "token": token.key, 
+            "token": token.key,
             "user": user_info,
         }, status=status.HTTP_200_OK)
     
-    return Response({
-        "detail": "Invalid credentials."
-    }, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
-# Client login
-# ------------
-@api_view(['POST'])
-def client_login(request):
-    email = request.data.get('email')
-    password = request.data.get('password')
+# @api_view(['POST'])
+# def client_login(request: Request):
+#     email = request.data.get('email')
+#     password = request.data.get('password')
     
-    if not email or not password:
-        return Response({
-            'detail': 'Email and password are required.'
-        }, status=status.HTTP_400_BAD_REQUEST)
+#     if not email or not password:
+#         return Response({'detail': 'Email and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    user = authenticate(email=email, password=password)
+#     user = auth.authenticate(username=email, password=password)
     
-    if user is None:
-        try:
-            user = Client.objects.get(email=email)
-            user = authenticate(email=user.email, password=password)
-        except Client.DoesNotExist:
-            return Response({
-                'detail': 'Invalid credentials.'
-            }, status=status.HTTP_401_UNAUTHORIZED)
+#     if user:
+#         token, created = Token.objects.get_or_create(user=user)
+#         serializer = ClientSerializer(user)
+#         user_info = {
+#             "id": serializer.data['id'],
+#             "first_name": serializer.data['first_name'],
+#             "last_name": serializer.data['last_name'],
+#             "email": serializer.data['email'],
+#         }
+#         return Response({
+#             "success": "Authenticated successfully",
+#             "token": token.key,
+#             "user": user_info,
+#         }, status=status.HTTP_200_OK)
     
-    if user is not None:
-        token, created = Token.objects.get_or_create(user=user)
-        serializer = ClientSerializer(instance=user)
-        
-        user_info = {
-            "id": serializer.data['id'],
-            "username": serializer.data['username'],
-            "email": serializer.data['email'],
-        }
-        
-        return Response({
-            "success": "Authenticated successfully",
-            "token": token.key, 
-            "user": user_info,
-            "dashboard_url": "/admin/dashboard"
-        }, status=status.HTTP_200_OK)
-    
-    return Response({
-        "detail": "Invalid credentials."
-    }, status=status.HTTP_401_UNAUTHORIZED)
+#     return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 # Logout
@@ -139,32 +123,34 @@ class GetUser(generics.RetrieveUpdateAPIView):
 
 # Get and post clients
 # --------------------
-class ClientsView(generics.ListCreateAPIView):
-    serializer_class = ClientSerializer
-    queryset = Client.objects.all()
+# class ClientsView(generics.ListCreateAPIView):
+#     # permission_classes = [IsAuthenticated]
+#     serializer_class = ClientSerializer
+#     queryset = Client.objects.all()
 
 
 # Get, update, and delete client
 # ------------------------------
-class ClientView(generics.RetrieveUpdateAPIView):
-    serializer_class = ClientSerializer
+# class ClientView(generics.RetrieveUpdateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = ClientSerializer
     
-    def get_queryset(self):
-        client = self.kwargs.get('client')
+#     def get_queryset(self):
+#         client = self.kwargs.get('client')
         
-        if client is not None:
-            try:
-                return Client.objects.filter(pk=client)
-            except Client.DoesNotExist:
-                return Http404('Client does not exists')
-        else:
-            return Client.objects.none()
+#         if client is not None:
+#             try:
+#                 return Client.objects.filter(pk=client)
+#             except Client.DoesNotExist:
+#                 return Http404('Client does not exists')
+#         else:
+#             return Client.objects.none()
         
     
 # Get and post Requests
 # ---------------------
 class RequestsView(generics.ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = RequestSerializer
 
     def get_queryset(self, *args, **kwargs):
@@ -175,6 +161,7 @@ class RequestsView(generics.ListCreateAPIView):
 # Get, update, and delete single Request
 # ------------------
 class RequestView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = RequestSerializer
 
     def get_queryset(self, *args, **kwargs):
@@ -191,6 +178,7 @@ class RequestView(generics.RetrieveAPIView):
 # Get and post uploads
 # --------------------
 class UploadsView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = UploadSerializer
     
     def get_queryset(self):
@@ -201,6 +189,7 @@ class UploadsView(generics.ListCreateAPIView):
 # Get uploads for a request
 # -------------------------
 class UploadsByRequestView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = UploadSerializer
     
     def get_queryset(self):
@@ -212,6 +201,7 @@ class UploadsByRequestView(generics.ListCreateAPIView):
 # Get and post dispenses
 # ----------------------
 class DispensesView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DispenseSerializer
     queryset = Dispense.objects.all()
     
@@ -219,6 +209,7 @@ class DispensesView(generics.ListCreateAPIView):
 # Get, update, and delete single dispense
 # ----------------------------------------
 class DispenseView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DispenseSerializer
     
     def get_queryset(self):
