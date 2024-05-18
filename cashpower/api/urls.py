@@ -10,9 +10,9 @@ urlpatterns = [
     path('request/<int:req>', views.RequestView.as_view(), name="request"),
     path('uploads/', views.UploadsView.as_view(), name="request"),
     path('req-uploads/<int:req>/', views.UploadsByRequestView.as_view(), name='uploads_by_request'),
-    path('clients/', views.ClientsView.as_view(), name='clients'),
-    path('client/<int:client>/', views.ClientView.as_view(), name='client'),
-    re_path('admin-login', views.admin_login),
-    re_path('client-login', views.client_login),
+    # path('clients/', views.ClientsView.as_view(), name='clients'),
+    # path('client/<int:client>/', views.ClientView.as_view(), name='client'),
+    re_path('login', views.login_view),
     re_path('logout', views.logout_view),
+    path('test-token/', views.test_token),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
