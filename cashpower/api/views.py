@@ -24,7 +24,7 @@ def test_token(request):
 # -----------
 @api_view(['POST'])
 def login_view(request: Request):
-    username = request.data.get('username')
+    username = request.data.get('email')
     password = request.data.get('password')
     
     if not username or not password:
