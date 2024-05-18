@@ -40,7 +40,6 @@ def admin_login(request):
             "success": "Authenticated successfully",
             "token": token.key, 
             "user": user_info,
-            "dashboard_url": "/admin/dashboard"
         }, status=status.HTTP_200_OK)
     
     return Response({
@@ -165,6 +164,7 @@ class ClientView(generics.RetrieveUpdateAPIView):
 # Get and post Requests
 # ---------------------
 class RequestsView(generics.ListCreateAPIView):
+    # permission_classes = [IsAuthenticated]
     serializer_class = RequestSerializer
 
     def get_queryset(self, *args, **kwargs):
