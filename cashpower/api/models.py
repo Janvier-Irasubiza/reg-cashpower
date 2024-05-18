@@ -6,6 +6,7 @@ class User(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     id_card_number = models.IntegerField(null=True, blank=True)
     phone_number = models.CharField(max_length=15)
+    username = models.CharField(max_length=100, null=True, blank=True, unique=True)
     
     def save(self, *args, **kwargs):
         if not self.pk:
