@@ -14,5 +14,5 @@ urlpatterns = [
     path('client/<int:client>/', views.ClientView.as_view(), name='client'),
     re_path('admin-login', views.admin_login),
     re_path('client-login', views.client_login),
-    re_path('logout', views.gout),
+    re_path('logout', views.logout_view),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
