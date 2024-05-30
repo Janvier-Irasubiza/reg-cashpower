@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RequestSerializer(serializers.ModelSerializer): 
     client = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     
+    
     class Meta:
         model = Request
         fields = "__all__"
@@ -27,7 +28,9 @@ class RequestSerializer(serializers.ModelSerializer):
         representation['client'] = {
             "id": client.id,
             "first_name": client.first_name,
-            "last_name": client.last_name
+            "last_name": client.last_name,
+            "phone_number": client.phone_number,
+            "id_card_number": client.id_card_number
         }
         return representation
     
