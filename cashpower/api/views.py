@@ -11,6 +11,12 @@ from rest_framework import status
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
 from rest_framework.views import APIView
+from django.http import FileResponse, Http404
+from django.http import FileResponse, HttpResponse
+from django.conf import settings
+import os
+import requests
+
 
 
 
@@ -86,34 +92,6 @@ def admin_login(request):
         "token": token.key,
         "user": user_info,
     }, status=status.HTTP_200_OK)
-
-
-# @api_view(['POST'])
-# def client_login(request: Request):
-#     email = request.data.get('email')
-#     password = request.data.get('password')
-    
-#     if not email or not password:
-#         return Response({'detail': 'Email and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-#     user = auth.authenticate(username=email, password=password)
-    
-#     if user:
-#         token, created = Token.objects.get_or_create(user=user)
-#         serializer = ClientSerializer(user)
-#         user_info = {
-#             "id": serializer.data['id'],
-#             "first_name": serializer.data['first_name'],
-#             "last_name": serializer.data['last_name'],
-#             "email": serializer.data['email'],
-#         }
-#         return Response({
-#             "success": "Authenticated successfully",
-#             "token": token.key,
-#             "user": user_info,
-#         }, status=status.HTTP_200_OK)
-    
-#     return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 # Logout
@@ -345,3 +323,37 @@ class DispenseView(generics.RetrieveUpdateAPIView):
             queryset = Dispense.objects.get(pk=id)
         
         return queryset
+    
+    
+class StatusChange(APIView):
+    serializer_class = [IsAuthenticated]
+    serializer_class = RequestSerializer
+
+    def put(self, request, *args, **kwargs):
+        request_id = kwargs.get('id')
+        status = request.data.get('status')
+
+        try:
+            request_obj = Request.objects.get(pk=request_id)
+        except Request.DoesNotExist:
+            return Response({'detail': 'Request not found'}, status=404)
+
+        request_obj.status = status 
+        request_obj.save()
+
+        return Response({'detail': 'Request updated successfully'})
+
+
+    
+
+def download_file(request, file_url):
+    try:
+        response = requests.get(file_url)
+        if response.status_code == 200:
+            filename = file_url.split("/")[-1] 
+            return HttpResponse(response.content, content_type=response.headers['Content-Type'])
+        else:
+            return HttpResponse("Failed to download file", status=response.status_code)
+    except Exception as e:
+        return HttpResponse(str(e), status=500)
+    

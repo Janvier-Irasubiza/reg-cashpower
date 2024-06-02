@@ -14,7 +14,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length = 20, choices=UserType.choices, default=UserType.CLIENT, unique=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number']
+    REQUIRED_FIELDS = ['phone_number', 'username']
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -44,7 +44,7 @@ class Request(models.Model):
     updated_at = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return f"{self.client} - {self.requested_service}"
+        return f"{self.client} - {self.requested_service} => {self.requested_on}"
 
 
 class Upload(models.Model):
