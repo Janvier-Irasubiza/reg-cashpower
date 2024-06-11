@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-307(%3j+y6w%+$$^s6%qggg&n9*wq06-z@^tovz!tz74omd#sm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['regcashpower.bwenge.com','127.0.0.1','10.0.2.2','localhost']
 
 
 # Application definition
@@ -36,10 +36,10 @@ INSTALLED_APPS = [
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost',
-    'http://127.0.0.1',
-]
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost',
+#     'http://127.0.0.1',
+# ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
